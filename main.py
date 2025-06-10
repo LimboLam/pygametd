@@ -5,18 +5,24 @@ from enemy import Enemy
 from world import World
 import json
 from turret import Turret
+from button import Button
 
 def main():
     pg.init()
 
     clock = pg.time.Clock()
 
-    screen = pg.display.set_mode((c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
+    screen = pg.display.set_mode((c.SCREEN_WIDTH + c.SIDE_PANEL, c.SCREEN_HEIGHT))
     pg.display.set_caption('Tower Defence')
 
+    # game variables
+    placing_turrets = False
+
     map_image = pg.image.load('levels/level.png').convert_alpha()
-    cursor_turret = pg.image.load('assets/images/turrets/cursor_turret.png')
-    enemy_image = pg.image.load('assets/images/enemies/enemy_1.png').convert_alpha()\
+    cursor_turret = pg.image.load('assets/images/turrets/cursor_turret.png').convert_alpha()
+    enemy_image = pg.image.load('assets/images/enemies/enemy_1.png').convert_alpha()
+    buy_turret_image = pg.image.load('assets/images/buttons/buy_turret.png').convert_alpha()
+    cancel_image = pg.image.load('assets/images/buttons/cancel.png').convert_alpha()
     
     # load json data for level
     with open('levels/level.tmj') as file:
@@ -41,18 +47,46 @@ def main():
     enemy = Enemy(world.waypoints, enemy_image)
     enemy_group.add(enemy)
 
+    #create buttons
+    turret_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, True)
+    cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
+
+    # game loop
     running = True
     while running:
         clock.tick(c.FPS)
 
+        ###########################
+        # UPDATING SECTION
+        ###########################
+        enemy_group.update()
+
+        ###########################
+        # DRAWING SECTION
+        ###########################
+
         screen.fill('black')
 
+        # draw level
         world.draw(screen)
 
-        enemy_group.update()
+        # draw groups
         turret_group.draw(screen)
-
         enemy_group.draw(screen)
+
+        # draw buttons
+        if turret_button.draw(screen):
+            placing_turrets = True
+        # if placing turrets then show the cancel button
+        if placing_turrets == True:
+            # show turret on cursor
+            cursor_rect = cursor_turret.get_rect()
+            cursor_pos = pg.mouse.get_pos()
+            cursor_rect.center = cursor_pos
+            if cursor_pos[0] <= c.SCREEN_WIDTH:
+                screen.blit(cursor_turret, cursor_rect)
+            if cancel_button.draw(screen):
+                placing_turrets = False
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -62,7 +96,8 @@ def main():
                 mouse_pos = pg.mouse.get_pos()
                 # check if mouse in on game area
                 if mouse_pos[0] < c.SCREEN_WIDTH and mouse_pos[1] < c.SCREEN_HEIGHT:
-                    create_turret(mouse_pos)
+                    if placing_turrets:
+                        create_turret(mouse_pos)
 
         pg.display.flip()
 
