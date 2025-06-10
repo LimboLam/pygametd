@@ -19,6 +19,7 @@ def main():
     placing_turrets = False
 
     map_image = pg.image.load('levels/level.png').convert_alpha()
+    turret_sheet = pg.image.load('assets/images/turrets/turret_1.png').convert_alpha()
     cursor_turret = pg.image.load('assets/images/turrets/cursor_turret.png').convert_alpha()
     enemy_image = pg.image.load('assets/images/enemies/enemy_1.png').convert_alpha()
     buy_turret_image = pg.image.load('assets/images/buttons/buy_turret.png').convert_alpha()
@@ -35,8 +36,8 @@ def main():
         mouse_tile_num = (mouse_tile_y * c.COLS) + mouse_tile_x
         # check if tile is grass
         if world.tile_map[mouse_tile_num] == 7:
-            turret = Turret(cursor_turret, mouse_tile_x, mouse_tile_y)
-            turret_group.add(turret)
+            new_turret = Turret(turret_sheet, mouse_tile_x, mouse_tile_y)
+            turret_group.add(new_turret)
 
     world = World(world_data, map_image)
     world.process_data()
@@ -59,7 +60,9 @@ def main():
         ###########################
         # UPDATING SECTION
         ###########################
+        
         enemy_group.update()
+        turret_group.update()
 
         ###########################
         # DRAWING SECTION
